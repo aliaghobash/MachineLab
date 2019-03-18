@@ -1,0 +1,154 @@
+
+
+//CONNECT THE DIGITAL INPUT WIRE FOR THE BUTTON INTO THE PIN VS THE SOLDER WHOLE.
+/*
+  This is a test sketch for the Adafruit assembled Motor Shield for Arduino v2
+  It won't work with v1.x motor shields! Only for the v2's with built in PWM
+  control
+
+  For use with the Adafruit Motor Shield v2
+  ---->	http://www.adafruit.com/products/1438
+*/
+
+
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+
+// Create the motor shield object with the default I2C address
+Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+// Or, create it with a different I2C address (say for stacking)
+// Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x61);
+
+// Connect a stepper motor with 200 steps per revolution (1.8 degree)
+// to motor port #2 (M3 and M4)
+Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *myMotor2 = AFMS.getStepper(200, 2);
+
+
+int stepperpos = 100;
+int potpos = 0;
+
+int speedchange = 0; //the speed variable.
+
+int buttonstate = 0; //off
+const int buttonpin = 3;
+int difference = 0 ;
+
+int potpos1 = 0;
+int stepperpos1 = 100;
+
+void setup() {
+  Serial.begin(9600);           // set up Serial library at 9600 bps
+  Serial.println("Stepper test!");
+
+
+  AFMS.begin();  // create with the default frequency 1.6KHz
+  //AFMS.begin(1000);  // OR with a different frequency, say 1KHz
+
+  myMotor->setSpeed(speedchange);  // 10 rpm
+  myMotor2->setSpeed(speedchange);  // 10 rpm
+
+
+  pinMode(buttonpin, INPUT);
+}
+
+int speedstate = Serial.println(speedchange);
+
+
+void loop() {
+
+  buttonstate = digitalRead(buttonpin); //constantly reading the state of the button in the loop.
+  Serial.println(buttonstate);
+
+  int sensorValue = analogRead(A0);
+  Serial.println(sensorValue);//myMotor
+
+  int sensorValue1 = analogRead(A1);
+  Serial.println(sensorValue); //myMotor2
+
+
+
+  // we want 1023 to become value between 0 to 200
+
+  potpos = map(sensorValue, 0, 1023, 0, 200); //mymotor
+  potpos1 = map(sensorValue1, 0, 1023, 0, 200); //mymotor2
+
+  Serial.println(potpos);
+
+
+  difference = stepperpos - potpos;
+  if (difference < 0) {
+    myMotor->setSpeed(60);
+    myMotor->step(-difference, FORWARD, SINGLE);
+  } else {
+    myMotor->step(difference, BACKWARD, SINGLE);
+  }
+  stepperpos = potpos;
+
+  difference = stepperpos1 - potpos1;
+  if (difference < 0) {
+    myMotor2->setSpeed(60);
+    myMotor2->step(-difference, FORWARD, SINGLE);
+  } else {
+    myMotor2->step(difference, BACKWARD, SINGLE);
+  }
+  stepperpos1 = potpos1;
+s
+
+  if (buttonstate == 1) {
+    Serial.println("working");
+    speedchange = 10;
+    myMotor->setSpeed(speedchange);  // 10 rpm
+    myMotor->setSpeed(speedchange);  // 10 rpm
+    myMotor->step(1, BACKWARD, SINGLE);
+    myMotor->step(1, FORWARD, SINGLE);
+  } else {
+    speedchange = 0;
+    myMotor->setSpeed(speedchange);  // 10 rpm
+    myMotor2->setSpeed(speedchange);  // 10 rpm
+    myMotor->step(1, BACKWARD, SINGLE);
+    myMotor2->step(1, FORWARD, SINGLE);
+  }
+
+
+  //The button makes it default mode
+  //the potentiometer customizes direction.
+  //Potentiometer A0: Changes direction of stepper port 1
+  //Potentiometer A1: Changes direction of Stepper port 2
+
+
+
+
+
+  // Serial.println("Single coil steps");
+  //myMotor->step(1, BACKWARD, SINGLE);
+
+  //Serial.println("Double coil steps");
+  //myMotor->step(100, FORWARD, DOUBLE);
+  // myMotor->step(100, BACKWARD, DOUBLE);
+
+  //Serial.println("Interleave coil steps");
+  // myMotor->step(100, FORWARD, INTERLEAVE);
+  //myMotor->step(100, BACKWARD, INTERLEAVE);
+
+  //Serial.println("Microstep steps");
+  //myMotor->step(50, FORWARD, MICROSTEP);
+  //myMotor->step(50, BACKWARD, MICROSTEP);
+
+  //   Serial.println("Single coil steps");
+  //myMotor2->step(1, FORWARD, SINGLE);
+
+
+  //Serial.println("Double coil steps");
+  //myMotor2->step(100, FORWARD, DOUBLE);
+  //myMotor2->step(100, BACKWARD, DOUBLE);
+
+  //Serial.println("Interleave coil steps");
+  //myMotor2->step(100, FORWARD, INTERLEAVE);
+  //myMotor2->step(100, BACKWARD, INTERLEAVE);
+
+  //Serial.println("Microstep steps");
+  // myMotor2->step(50, FORWARD, MICROSTEP);
+  // myMotor2->step(50, BACKWARD, MICROSTEP);
+
+}
